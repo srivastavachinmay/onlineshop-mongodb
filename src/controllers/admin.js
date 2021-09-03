@@ -13,16 +13,11 @@ exports.postAddProduct = (req, res, next) => {
     const imageUrl = req.body.imageUrl;
     const price = req.body.price;
     const description = req.body.description;
-    console.log(title)
-    req.user.createProduct({
-        title: title,
-        price: price,
-        imageUrl: imageUrl,
-        description: description
-    })
+    const product = new Product(title,price,description,imageUrl)
+    product.save()
         .then(result => {
             console.log('created product')
-            res.redirect('/')
+            res.redirect('/admin/products')
         }).catch(err => console.log(err))
     // const product = new Product(null, title, imageUrl, description, price);
     // product.save().then(() => {
@@ -88,7 +83,7 @@ exports.postEditProduct = async (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-    
+
     // Product.findAll()
     req.user.getProducts()
     .then(products => {
