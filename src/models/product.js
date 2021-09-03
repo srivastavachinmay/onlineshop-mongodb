@@ -1,16 +1,26 @@
+const mongodb = require('mongodb')
 const getDb = require('../util/database').getDb
 
 class Product {
-    constructor(title, price, description, imageUrl) {
+    constructor(title, price, description, imageUrl, id) {
         this.title = title
         this.price = price
         this.description = description
         this.imageUrl = imageUrl
+        this._id = id
     }
 
     save() {
         const db = getDb()
-        return db.collection('products').insertOne(this)
+        let dbOp
+        if (this._id) {
+            // Update the Product
+            dbOp = db.collection('products').updateOne({_id: new mongodb.ObjectId(this._id)}, {$set: this})
+        } else {
+            // Add the Product
+            dbOp = db.collection('products').insertOne(this)
+        }
+        return dbOp
             .then(result => console.log(result))
             .catch(err => console.log(err))
     }
@@ -20,11 +30,31 @@ class Product {
         return db.collection('products')
             .find()
             .toArray()
-            .then(products=>{
+            .then(products => {
                 console.log(products)
                 return products
             })
             .catch(err => console.log(err))
+    }
+
+    static findById(prodId) {
+        const db = getDb()
+        return db.collection('products').find({_id: new mongodb.ObjectId(prodId)}).next().then(product => {
+            console.log(product)
+            return product
+        }).catch(err => console.log(err))
+    }
+
+    static async deleteById(prodId) {
+        const db = getDb()
+        try {
+            const del = await db.collection('products').deleteOne({_id: mongodb.ObjectId(prodId)})
+            console.log("Deleted")
+            return del
+        } catch (e) {
+            console.log(e)
+        }
+
     }
 }
 
